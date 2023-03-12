@@ -21,7 +21,7 @@ impl Dom {
 
     pub fn parse_html(&mut self, html: String) {
 
-        let mut html_iter = html.chars();
+        let mut html_iter = html.chars().peekable();
         'main_loop: while let Some(char) = html_iter.next() {
             match char {
                 '<' => {
@@ -73,15 +73,30 @@ impl Dom {
                                 }
                             }
                         },
-                        None => break,
+                        None => (),
                     }
                 },
-                // ' ' => (),
                 _ => {
+                    if char.is_whitespace() {
+                        continue;
+                    }
                     // child is text
-                    // let text = html_iter.get_while(|ch| ch != '<');
-                    
-                    // println!("{text}");
+                    let mut text = char.to_string();
+                    let mut holder = String::new();
+
+                    while html_iter.peek().map_or(false, |&ch| ch != '<' ) {
+                        let char = html_iter.next().unwrap();
+                        if char.is_whitespace() {
+                            holder.push(char);
+                        } else {
+                            text.push_str(&holder);
+                            holder.clear();
+                            text.push(char);
+                        }
+                        
+                    }
+
+                    self.add_to_tree(Arc::new(Mutex::new(Node::Text(text))));
                 },
             }
         }
@@ -102,7 +117,10 @@ impl Dom {
                     _ => (),
                 }
             }
-            self.node_stack.push(Arc::clone(&node));
+            let guard = node.lock().unwrap();
+            if let Node::Element(_) = *guard {
+                self.node_stack.push(Arc::clone(&node));
+            }
         }
     }
 

@@ -40,7 +40,9 @@ impl Display for Element {
                 Node::Element(ref e) => {
                     write!(f, "{}", e).unwrap();
                 },
-                _ => (),
+                Node::Text(ref t) => {
+                    writeln!(f, "{}", t).unwrap();
+                },
             }
         }
         writeln!(f, "<{} />", self.tag_name)

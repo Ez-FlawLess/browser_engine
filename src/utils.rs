@@ -1,4 +1,4 @@
-use std::str::Chars;
+use std::{str::Chars, iter::Peekable};
 
 pub trait GetWhile {
     fn get_while<F>(&mut self, f: F) -> String
@@ -6,7 +6,7 @@ pub trait GetWhile {
         F: Fn(char) -> bool;
 }
 
-impl<'a> GetWhile for Chars<'a> {
+impl<'a> GetWhile for Peekable<Chars<'a>> {
     fn get_while<F>(&mut self, f: F) -> String
     where
         F: Fn(char) -> bool,
